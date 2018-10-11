@@ -34,9 +34,9 @@ var paula = {
     altura: 1.76
 }
 
-const esAlta = ({altura}) => altura > 1.8
+const esAlta = ({ altura }) => altura > 1.8
 //Reto, personas bajas:
-const esBaja = ({altura}) =>!esAlta({altura})
+const esBaja = ({ altura }) => !esAlta({ altura })
 
 //Declaramos el array
 var personas = [sacha, alan, martin, dario, vicky, paula]
@@ -50,10 +50,17 @@ var personasAltas = personas.filter(function (persona) {
     return persona.altura < 1.8
 })*/
 
+const pasarAlturaACM = persona => ({
+    // persona.altura *= 100 // es lo mismo que persona.altura * 100= persona.altura * 100
+        ...persona,
+        altura: persona.altura * 100
+    })
 
+const pasarMtsaCm = personas.map(pasarAlturaACM)
+
+/*
 var personasAltas = personas.filter(esAlta)
 var personasBajas = personas.filter(esBaja)
+*/
 
-
-console.log(personasAltas)
-console.log(personasBajas)
+console.log(pasarMtsaCm)
