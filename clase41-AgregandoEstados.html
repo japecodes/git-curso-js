@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>Simon Dice</title>
+  <style>
+    body {
+      margin: 0;
+      background: #dedede;
+      display: flex;
+      align-items: center;
+      height: 100vh;
+    }
+    h1 {
+      position: absolute;
+      top: 0;
+      text-align: center;
+      width: 100%;
+      font-family: 'Bungee Inline', cursive; 
+      /*font-family: 'Bungee Outline', cursive;*/
+      color: #00b894;
+      font-size: 30px;
+      /*margin: 0;*/
+      margin-top: 30px;
+    }
+    .gameboard {
+      height: 100vh;
+      width: 100vh;
+      border-radius: 50%;
+      overflow: hidden;
+      margin: 0 auto;
+      max-height: 70vh;
+      max-width: 70vh;
+      border: 3px solid black;
+    }
+
+    .color {
+      width: 50%;
+      height: 50%;
+      display: inline-block;
+    }
+
+    .left {
+      float: left;
+    }
+
+    .right {
+      float: left;
+    }
+
+    .celeste {
+      background: #22a6b3;
+    }
+
+    .celeste.light {
+      background: #7ed6df;
+    }
+
+    .violeta {
+      background: #be2edd;
+    }
+
+    .violeta.light {
+      background: #e056fd;
+    }
+
+    .naranja {
+      background: #f0932b;
+    }
+
+    .naranja.light {
+      background: #ffbe76;
+    }
+
+    .verde {
+      background: #6ab04c;
+    }
+
+    .verde.light {
+      background: #badc58;
+    }
+
+    .btn-start {
+      cursor: pointer;
+      width: 420px;
+      height: 100px;
+      background: #ecf0f1;
+      color: #2c3e50;
+      border: none;
+      border-bottom: 4px solid #c4c6c7;
+      border-radius: 8px;
+      font-size: 3em;
+      position: absolute;
+      top: calc(50% - 50px);
+      left: calc(50% - 210px);
+      transition: .5s;
+      outline: none;
+    }
+
+    .btn-start:hover {
+      color: #ecf0f1;
+      background: #2c3e50;
+      border-bottom: 4px solid #1f3346;
+    }
+
+    .btn-start:active {
+      transform: scale(.95);
+    }
+
+    .hide {
+      display: none;
+    }
+    .shadow {
+      text-shadow: 1px 1px 15px #55efc4;
+    }
+
+    * {
+      font-family: 'Open Sans', sans-serif;
+    }
+  </style>
+</head>
+
+<body>
+    <h1 class="shadow">Simon Dice</h1>
+  <div class="gameboard">
+    <div id="celeste" class="color celeste left" data-color="celeste"></div>
+    <div id="violeta" class="color violeta right" data-color="violeta"></div>
+    <div id="naranja" class="color naranja left" data-color="naranja"></div>
+    <div id="verde" class="color verde right" data-color="verde"></div>
+    
+    <button id="btnEmpezar" class="btn-start" onclick="empezarJuego()">Empezar a jugar!</button>
+  </div>
+  <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+  <script>
+    const celeste = document.getElementById('celeste')
+    const violeta = document.getElementById('violeta')
+    const naranja = document.getElementById('naranja')
+    const verde = document.getElementById('verde')
+    const btnEmpezar = document.getElementById('btnEmpezar')
+
+    const ULTIMO_NIVEL =10
+
+    const green = new Audio('audio/green.mp3')
+    const orange = new Audio('audio/orange.mp3')
+    const blue = new Audio('audio/blue.mp3')
+    const violet = new Audio('audio/violet.mp3')
+    const audioPerder = new Audio('audio/lose.mp3')
+    const puntuacion = 0
+    
+    const sonidos = [blue,violet, orange, green, audioPerder]
+
+    class Juego {
+      constructor() {
+        this.inicializar = this.inicializar.bind(this)
+        this.inicializar()
+        this.generarSecuencia()
+        setTimeout(this.siguienteNivel(), 500);
+        
+      }
+      inicializar() {
+       
+        //la funcion siguienteNivel va a estar atada al juego siempre
+        this.elegirColor = this.elegirColor.bind(this)
+        this.siguienteNivel = this.siguienteNivel.bind(this)
+        this.toogleBtnEmpezar()//prendido o apagado
+        this.nivel = 1
+        this.puntuacion = 0
+        this.colores = {
+          celeste,
+          violeta,
+          naranja,
+          verde
+        }
+      }
+      toogleBtnEmpezar(){
+        if (btnEmpezar.classList.contains('hide')) {
+          btnEmpezar.classList.remove('hide')
+        } else {
+          btnEmpezar.classList.add('hide')
+        }
+      }
+      generarSecuencia() {
+        //Generar array de numeros random
+        this.secuencia = new Array(ULTIMO_NIVEL).fill(0).map(n => Math.floor(Math.random() * 4))
+      }
+      siguienteNivel(){
+        this.subnivel = 0
+        this.iluminarSecuencia()
+        this.agregarEventoClick()
+
+      }
+      transformarNumeroAColor(numero){
+        switch (numero) {
+          case 0:
+            return 'celeste'
+          case 1:
+            return 'violeta'
+          case 2:
+            return 'naranja'
+          case 3:
+            return 'verde'
+        }
+      }
+      transformarColorANumero(numero){
+        switch (numero) {
+          case 'celeste':
+            return 0
+          case 'violeta':
+            return 1
+          case 'naranja':
+            return 2
+          case 'verde':
+            return 3
+        }
+      }
+      elegirAudio(color){
+        switch (color) {
+          case 'celeste':
+            return 0
+          case 'violeta':
+            return 1
+          case 'naranja':
+            return 2
+          case 'verde':
+            return 3
+        }
+      }
+      iluminarSecuencia(){
+        for (let i = 0; i < this.nivel; i++) {
+          const color = this.transformarNumeroAColor(this.secuencia[i]);
+          const sonido = this.elegirAudio(color)
+          setTimeout(() => {
+            this.iluminarColor(color,sonido)  
+          }, 1000 * i);
+          
+        }
+      }
+      
+      iluminarColor(color,sonido){
+        this.colores[color].classList.add('light')
+        sonidos[sonido].play()
+        setTimeout(() => {
+          this.apagarColor(color)
+        }, 350);
+      }
+      apagarColor(color){
+        this.colores[color].classList.remove('light')
+      }
+      agregarEventoClick(){
+        this.colores.celeste.addEventListener('click', this.elegirColor)
+        this.colores.verde.addEventListener('click', this.elegirColor)
+        this.colores.violeta.addEventListener('click', this.elegirColor)
+        this.colores.naranja.addEventListener('click', this.elegirColor)
+      }
+      eliminarEventoclick(){
+        this.colores.celeste.removeEventListener('click', this.elegirColor)
+        this.colores.verde.removeEventListener('click', this.elegirColor)
+        this.colores.violeta.removeEventListener('click', this.elegirColor)
+        this.colores.naranja.removeEventListener('click', this.elegirColor)
+      }
+      elegirColor(ev){
+        //ver el numero del color que eligio el usuario
+        const  nombreColor = ev.target.dataset.color
+        const numeroColor = this.transformarColorANumero(nombreColor)
+        const sonido = this.elegirAudio(nombreColor)
+        this.iluminarColor(nombreColor, sonido)
+        //Desde aqui empieza el subnivel
+        if (numeroColor === this.secuencia[this.subnivel]){
+          this.subnivel++
+          this.puntuacion++
+          if(this.subnivel === this.nivel){//pasa de nivel
+            this.nivel++
+            this.eliminarEventoclick()
+            if(this.nivel === ULTIMO_NIVEL+1){
+              //Ganó
+              this.ganoElJuego()
+            }else{
+              //Siguiente NIvel
+              swal('Vas Bien!',`Puntuacion ${this.puntuacion} puntos \n Siguiente nivel: ${this.nivel}`,'success')
+              .then(()=>setTimeout(this.siguienteNivel, 1000))
+            }
+          }
+        }else{
+          //Perdió
+          this.perdioElJuego()
+        }
+      }
+      ganoElJuego(){
+        swal('Simon Dice',`Felicitaciones ganaste el juego \n Puntuación Final: ${this.puntuacion}`,'success')
+        .then(this.inicializar)
+      }
+      perdioElJuego(){
+        sonidos[4].play()
+        swal('Simon Dice',`Lo lamentamos, perdisste :c Puntuación Final: ${this.puntuacion}`,'error')
+        .then(()=>{
+          this.eliminarEventoclick(),this.inicializar()
+        })
+      }
+    }
+    //Data Set +lo que sea significa que dentro del data set significa que "lo que sea" será un atributo del dataset
+    function empezarJuego() {
+      window.juego = new Juego()
+    }
+  </script>
+</body>
+
+</html>
